@@ -1,0 +1,131 @@
+import pandas as pd
+
+url = 'https://gist.githubusercontent.com/kevin336/acbb2271e66c10a5b73aacf82ca82784/raw/employees.csv'
+df = pd.read_csv(url)
+
+print(df.head())
+print(df.info())
+
+print("Missing values (per column):")
+print(df.isnull().sum())
+
+df_dropped_rows = df.dropna()
+df_dropped_columns = df.dropna(axis=1) 
+
+df_filled_0 = df.fillna(0)
+df_filled_ffill = df.fillna(method='ffill')
+df_filled_mean = df.fillna(df.mean(numeric_only=True))
+
+print( df.duplicated().any())
+df_no_duplicates = df.drop_duplicates()
+
+df.to_csv('cleaned_employees.csv', index=False)
+
+employee_dept = df['DEPARTMENT_ID'].value_counts()
+print("Employee count per department:")
+print(employee_dept)
+
+df['FULL_NAME'] = df['FIRST_NAME'] + ' ' + df['LAST_NAME']
+
+df_sorted_asc = df.sort_values('SALARY')
+df_sorted_desc = df.sort_values('SALARY', ascending=False)
+df_sorted_multi = df.sort_values(['DEPARTMENT_ID', 'SALARY'])
+df_sorted_index = df.sort_index()
+
+dept_90 = df[df['DEPARTMENT_ID'] == 90]
+print("Employees in Department 90:")
+print(dept_90)
+
+avg_salary = df['SALARY'].mean()
+median_salary = df['SALARY'].median()
+print(f"Average Salary: {avg_salary}")
+print(f"Median Salary: {median_salary}")
+
+sorted_salary = df.sort_values(by='SALARY')
+print("Top 5 Earners (Lowest):")
+print(sorted_salary[['FIRST_NAME', 'LAST_NAME', 'SALARY']].head())
+
+highest_paid = df[df['SALARY'] == df['SALARY'].max()]
+print("Highest Paid Employee(s):")
+print(highest_paid[['FULL_NAME', 'SALARY']])
+
+avg_salary_in_job = df.groupby('JOB_ID')['SALARY'].mean()
+print("Average Salary by Job ID:")
+print(avg_salary_in_job)
+
+dept_50 = df[df['DEPARTMENT_ID'] == 50]
+print("Employees in Department 50:")
+print(dept_50)
+
+names_0_to_7 = df.iloc[0:8][['FIRST_NAME', 'LAST_NAME']]
+print("Names from Index 0 to 7:")
+print(names_0_to_7)
+
+print("Columns 98 to 105 (if available):")
+if df.shape[1] >= 106:
+    print(df.iloc[:, 98:106])
+else:
+    print("The DataFrame does not have columns at index 98 to 105.")
+
+print("First 10 Last Names:")
+print(df['LAST_NAME'].head(10))
+
+if 'PHONE_NUMBER' in df.columns:
+    mobiles_starting_91 = df[df['PHONE_NUMBER'].astype(str).str.startswith('91')]
+    print("Phone numbers starting with '91':")
+    print(mobiles_starting_91[['FIRST_NAME', 'LAST_NAME', 'PHONE_NUMBER']])
+else:
+    print("No PHONE_NUMBER column in the dataset.")
+
+df['MANAGER_ID'] = df['MANAGER_ID'].fillna(method='ffill')
+df['MANAGER_ID'] = df['MANAGER_ID'].fillna(10)
+
+columns = df.columns.tolist()
+custom_rows = pd.DataFrame([
+    [200, 'Puni', 'Sharma', 'puni.sharma@example.com', '9111111111', '2023-05-01', 'IT_PROG', 7500, None, 101, 60, 'Puni Sharma'],
+    [201, 'Anu', 'Naidu', 'anu.j@example.com', '9111222233', '2023-06-01', 'HR_REP', 6200, None, 102, 40, 'Anu Naidu'],
+    [202, 'Navya', 'Verma', 'navya.v@example.com', '9111333344', '2023-07-01', 'SA_REP', 8000, None, 103, 80, 'Navya Verma']
+], columns=columns)
+df.iloc[4:7] = custom_rows.values
+
+print("Modified rows 4 to 6:")
+print(df.iloc[4:7])
+
+high_salary = df[df['SALARY'] > 10000]
+print("Employees with Salary > 10,000:")
+print(high_salary[['FIRST_NAME', 'LAST_NAME', 'SALARY']])
+
+df['HIRE_DATE'] = pd.to_datetime(df['HIRE_DATE'])
+
+
+hired_november = df[df['HIRE_DATE'].dt.month == 11]
+print("Employees Hired in November:")
+print(hired_november[['FIRST_NAME', 'LAST_NAME', 'HIRE_DATE']])
+
+hired_2004 = df[df['HIRE_DATE'].dt.year == 2004]
+print("Employees Hired in 2004:")
+print(hired_2004[['FIRST_NAME', 'LAST_NAME', 'HIRE_DATE']])
+
+print("Employee count by JOB_ID:")
+print(df.groupby('JOB_ID').size())
+
+print("Employees with 'a' in their FIRST_NAME:")
+contains_a = df[df['FIRST_NAME'].str.contains('a', case=False)]
+print(contains_a[['FIRST_NAME', 'LAST_NAME']])
+
+df['EMAIL_LENGTH'] = df['EMAIL'].str.len()
+print("Length of EMAIL field:")
+print(df[['FIRST_NAME', 'EMAIL', 'EMAIL_LENGTH']].head())
+
+department_counts = df['DEPARTMENT_ID'].value_counts()
+most_employees_department = department_counts.idxmax()
+most_employees_count = department_counts.max()
+
+print(f" Department with most employees: {most_employees_department} ({most_employees_count})")
+
+df['EMPLOYEE_KEY']=df['EMPLOYEE_ID'].astype(str)+'-'+df['FULL_NAME']
+grouped = df.groupby(['EMPLOYEE_ID', 'FULL_NAME'])['SALARY'].sum()
+print(grouped)
+
+grouped = df.groupby(['HIRE_DATE','JOB_ID']).sum()
+print(grouped)
